@@ -51,13 +51,24 @@ const serverHandle = (req,res) => {
      * 获取到postData后再进入路由
      */
     // 处理blog路由
-    const blogData = handleBlogRouter(req,res)
-    if(blogData) {
-      res.end(
-        JSON.stringify(blogData)
-      )
+    // handleBlogRouter返回的是promise
+    const blogResult = handleBlogRouter(req,res)
+    if(blogResult){
+      blogResult.then(blogData => {
+        res.end(
+          JSON.stringify(blogData)
+        )
+      })
       return
     }
+    // 假数据
+    // const blogData = handleBlogRouter(req,res)
+    // if(blogData) {
+    //   res.end(
+    //     JSON.stringify(blogData)
+    //   )
+    //   return
+    // }
     
     // 处理user路由
     const userData = handleUserRouter(req,res)
