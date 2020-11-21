@@ -1,6 +1,15 @@
 const { login } = require('../controller/user')
 const { SuccessModel, ErrorModel} = require('../model/resModel')
 
+//获取/生成cookie的过期时间
+const getCookieExpries = () => {
+  const d = new Date()
+  d.setTime(d.getTime() + (24 * 60 * 60 *1000))
+  // console.log(d.toGMTString());
+  // Sun, 22 Nov 2020 08:55:34 GMT
+  //一种日期格式
+  return d.toGMTString()
+}
 
 const handleUserRouter = (req, res) => {
   const method = req.method
@@ -18,7 +27,7 @@ const handleUserRouter = (req, res) => {
     return result.then(result => {
       if(result.username){
         // 操作cookie
-        res.setHeader('Set-Cookie',`username=${result.username}; httponly; path=/`)
+        res.setHeader('Set-Cookie',`username=${result.username}; httpOnly; path=/ ;expires=${getCookieExpries()}`)
 
         return new SuccessModel()
       }
@@ -29,7 +38,9 @@ const handleUserRouter = (req, res) => {
   // 登录验证的测试
   if(method === 'GET' && req.path === '/api/user/logintest') {
     if(req.cookie.username){
-      return Promise.resolve(new SuccessModel())
+      return Promise.resolve(new SuccessModel({
+        username: req.cookie.username
+      }))
     }else {
       return Promise.resolve(new ErrorModel('尚未登录'))
     }
