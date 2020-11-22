@@ -1,6 +1,18 @@
 const querystring = require('querystring')
 const handleBlogRouter = require('./src/router/blog')
 const handleUserRouter = require('./src/router/user')
+// const getCookieExpries = require('./src/util/getCookieExpries')
+const getCookieExpries = () => {
+  const d = new Date()
+  d.setTime(d.getTime() + (24 * 60 * 60 *1000))
+  // console.log(d.toGMTString());
+  // Sun, 22 Nov 2020 08:55:34 GMT
+  //一种日期格式
+  return d.toGMTString()
+}
+
+// session数据
+let SESSION_DATA = {}
 
 // 用于处理 post data ，若是POST请求且存在data ,则返回JSON.parse(postData)
 const getPostData = (req) => {
@@ -54,9 +66,31 @@ const serverHandle = (req,res) => {
     const val = arr[1].trim(' ')
     req.cookie[key] = val
   })
-  console.log(req.cookie);
+  // console.log(req.cookie);
   
-
+  // 解析session
+  /**
+   * userId是标识某个用户(浏览器)的唯一标识
+   * 该用户在server端的缓存信息记录在SESSION_DATA[用户id]处
+   * 
+   * 逻辑：
+   * 1.该用户是否已经拥有userid(首次访问)
+   * 2.如果是首次访问，赋予userId,并初始化对应的SESSION_DATA[userId]
+   * 3.将SESSION_DATA[userId]赋值给本次访问的req.session
+   * 4.后续操作对req.session进行访问查询
+   */
+  let needSetCookie = false //是否首次登录，若是，赋予userId时需要设置cookie
+  let userId = req.cookie.userid
+  if(userId) {
+    if(!SESSION_DATA[userId]) {
+      SESSION_DATA[userId] = {}
+    }
+  } else {
+    needSetCookie = true;
+    userId = `${Date.now()}_${Math.random()}`
+    SESSION_DATA[userId] = {}
+  }
+  req.session = SESSION_DATA[userId]
 
   // 在进入路由之前，先处理post data
   getPostData(req).then(postData => {
@@ -71,6 +105,9 @@ const serverHandle = (req,res) => {
     const blogResult = handleBlogRouter(req,res)
     if(blogResult){
       blogResult.then(blogData => {
+        if (needSetCookie) {
+          res.setHeader('Set-Cookie',`userid=${userId}; httpOnly; path=/ ;expires=${getCookieExpries}`)
+        }
         res.end(
           JSON.stringify(blogData)
         )
@@ -82,6 +119,9 @@ const serverHandle = (req,res) => {
     const userResult = handleUserRouter(req,res)
     if(userResult) {
       userResult.then(userData => {
+        if (needSetCookie) {
+          res.setHeader('Set-Cookie',`userid=${userId}; httpOnly; path=/ ;expires=${getCookieExpries()}`)
+        }
         res.end(
           JSON.stringify(userData)
         )
