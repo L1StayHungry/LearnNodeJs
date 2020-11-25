@@ -1,6 +1,8 @@
 const querystring = require('querystring')
+const { get, set} = require('./src/db/redis')
 const handleBlogRouter = require('./src/router/blog')
 const handleUserRouter = require('./src/router/user')
+
 // const getCookieExpries = require('./src/util/getCookieExpries')
 const getCookieExpries = () => {
   const d = new Date()
@@ -12,7 +14,7 @@ const getCookieExpries = () => {
 }
 
 // session数据
-let SESSION_DATA = {}
+// let SESSION_DATA = {}
 
 // 用于处理 post data ，若是POST请求且存在data ,则返回JSON.parse(postData)
 const getPostData = (req) => {
@@ -81,19 +83,26 @@ const serverHandle = (req,res) => {
    */
   let needSetCookie = false //是否首次登录，若是，赋予userId时需要设置cookie
   let userId = req.cookie.userid
-  if(userId) {
-    if(!SESSION_DATA[userId]) {
-      SESSION_DATA[userId] = {}
-    }
-  } else {
+  if(!userId) {
     needSetCookie = true;
     userId = `${Date.now()}_${Math.random()}`
-    SESSION_DATA[userId] = {}
-  }
-  req.session = SESSION_DATA[userId]
-
-  // 在进入路由之前，先处理post data
-  getPostData(req).then(postData => {
+    // 初始化redis里面的session
+    set(userId, {})
+  } 
+  // 获取redis中的session
+  req.sessionId = userId
+  get(req.sessionId).then(sessionData => {
+    if(sessionData == null) {
+      // 初始化redis里面的session
+      set(userId, {})
+      // 设置session
+      req.session = {}
+    }else{
+      req.session = sessionData
+    }
+    // 在进入路由之前，先处理post data
+    return getPostData(req)
+  }).then(postData => {
     // 所有路由可以通过req.body来获取postData
     req.body = postData
 
