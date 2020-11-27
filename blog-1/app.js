@@ -114,9 +114,6 @@ const serverHandle = (req,res) => {
     const blogResult = handleBlogRouter(req,res)
     if(blogResult){
       blogResult.then(blogData => {
-        console.log(userId,'userId');
-        console.log(blogData);
-        console.log(needSetCookie);
         
         if (needSetCookie) {
           res.setHeader('Set-Cookie',`userid=${userId}; path=/; httpOnly;expires=${getCookieExpries()}`)

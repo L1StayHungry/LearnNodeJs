@@ -14,7 +14,7 @@
       <input id="text-keyword">
       <button id="btn-search">搜索</button>
     </div>
-    <table id="tabel-container">
+    <table id="table-container">
       <tr>
         <th>博客标题</th>
         <th colspan="2">操作</th>
@@ -72,6 +72,8 @@
 
         // 显示数据
         const data = res.data || []
+        console.log(data);
+        
         data.forEach(item => {
           $tableContainer.append($(`
             <tr>
