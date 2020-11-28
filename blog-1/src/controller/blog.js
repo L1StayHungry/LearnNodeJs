@@ -1,4 +1,5 @@
 //先导入mysql.js封装好的exec函数
+const xss = require('xss')
 const { exec, escape } = require('../db/mysql')
 
 const getList = (author,keyword) => {
@@ -54,7 +55,7 @@ const getDetail = (id) => {
 
 const newBlog = (blogData = {}) => {
   // blogData是一个博客对象，包含title content 属性
-  let title = blogData.title
+  let title = xss(blogData.title)
   let content = blogData.content
   const createtime = Date.now()
   let author = blogData.author
