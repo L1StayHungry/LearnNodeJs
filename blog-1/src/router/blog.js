@@ -94,7 +94,7 @@ const handleBlogRouter = (req, res) => {
   }
   
   // 删除一篇博客
-  if (method === 'POST' && req.path === '/api/blog/delete') {
+  if (method === 'POST' && req.path === '/api/blog/del') {
     //登录验证
     const loginCheckResult = loginCheck(req)
     if(loginCheckResult) {

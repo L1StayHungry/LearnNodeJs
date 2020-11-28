@@ -1,14 +1,16 @@
 //先导入mysql.js封装好的exec函数
-const { exec } = require('../db/mysql')
+const { exec, escape } = require('../db/mysql')
 
 const getList = (author,keyword) => {
   let sql = `select * from blogs where 1=1 `
   if (author) {
+    author = escape(author)
     //后面记得加空格，方便下一个句子加入
-    sql += `and author='${author}' `
+    sql += `and author=${author} `
   }
   if (keyword) {
-    sql += `and title like '%${keyword}%' `
+    keyword = escape(keyword)
+    sql += `and title like %${keyword}% `
   }
   sql += `order by createtime desc;`
   
@@ -42,7 +44,8 @@ const getDetail = (id) => {
   //   createTime: 1605080082985,
   //   author: 'zhangsan'
   // }
-  const sql = `select * from blogs where id='${id}' `
+  id = escape(id)
+  const sql = `select * from blogs where id=${id} `
   return exec(sql).then(rows => {
     // 把外层数组先去掉
     return rows[0]
@@ -51,16 +54,25 @@ const getDetail = (id) => {
 
 const newBlog = (blogData = {}) => {
   // blogData是一个博客对象，包含title content 属性
-  const title = blogData.title
-  const content = blogData.content
+  let title = blogData.title
+  let content = blogData.content
   const createtime = Date.now()
-  const author = blogData.author
+  let author = blogData.author
   // console.log('newBlog blogData',blogData);
+  console.log('0000');
 
+  //防止sql注入
+  title = escape(title)
+  content = escape(content)
+  author = escape(author)
+  console.log('1111');
+  
   const sql = `
     insert into blogs (title,content,createtime,author) 
-    values ('${title}','${content}','${createtime}','${author}');
+    values (${title},${content},'${createtime}',${author});
   `
+  console.log('sql:',sql);
+  
   return exec(sql).then(insertData => {
     console.log(insertData);
     return {
@@ -75,11 +87,17 @@ const newBlog = (blogData = {}) => {
 
 const updateBlog = (id, blogData = {}) => {
   // blogData是一个博客对象，包含title content 属性
-  const title = blogData.title
-  const content = blogData.content
+  let title = blogData.title
+  let content = blogData.content
   // console.log('updateBlog id,blogData',id,blogData);
+  
+  //防止sql注入
+  title = escape(title)
+  content = escape(content)
+  id = escape(id)
+
   const sql = `
-    update blogs set title='${title}', content='${content}' where id=${id};
+    update blogs set title=${title}, content=${content} where id=${id};
   `
   return exec(sql).then(updateData => {
     if(updateData.affectedRows > 0){
@@ -92,8 +110,12 @@ const updateBlog = (id, blogData = {}) => {
 }
 
 const delBlog = (id,author) => {
+  //防止sql注入
+  id = escape(id)
+  author = escape(author)
+
   // 播客id
-  const sql = `delete from blogs where id=${id} and author='${author}'`
+  const sql = `delete from blogs where id=${id} and author=${author}`
   return exec(sql).then(deleteData => {
     if(deleteData.affectedRows > 0){
       return true
