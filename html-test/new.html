@@ -78,7 +78,7 @@
             }
             post(url, data).then(res => {
                 if (res.error !== 0) {
-                    alert('操作错误')
+                    alert(res.message)
                     return
                 }
                 alert('创建成功')

@@ -1,0 +1,2 @@
+::1 - - [30/Jan/2021:13:53:17 +0000] "GET /api/blog/list?isadmin=1 HTTP/1.0" 200 958 "http://localhost:81/admin.html" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36"
+::ffff:127.0.0.1 - - [30/Jan/2021:13:53:20 +0000] "GET /api/blog/detail?id=4 HTTP/1.0" 304 - "http://localhost:81/detail.html?id=4" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36"
